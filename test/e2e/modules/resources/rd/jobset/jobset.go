@@ -15,8 +15,8 @@ import (
 	"github.com/NVIDIA/KAI-scheduler/test/e2e/modules/constant"
 )
 
-// CreateObject creates a JobSet with a single replicatedJob
-func CreateObject(name, namespace, queueName string, parallelism, completions int32) *jobsetv1alpha2.JobSet {
+// CreateUnequalCompletionJobSetObject creates a JobSet with a single replicatedJob
+func CreateUnequalCompletionJobSetObject(name, namespace, queueName string, parallelism, completions int32) *jobsetv1alpha2.JobSet {
 	return &jobsetv1alpha2.JobSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
