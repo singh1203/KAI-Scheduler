@@ -286,16 +286,6 @@ func NewDefaultPluginsHub(kubeClient client.Client, searchForLegacyPodGroups,
 			Version: "v1alpha1",
 			Kind:    "PodCliqueSet",
 		}: groveGrouper,
-		{
-			Group:   "nvidia.com",
-			Version: "v1alpha1",
-			Kind:    "DynamoGraphDeployment",
-		}: groveGrouper,
-		{
-			Group:   "nvidia.com",
-			Version: "v1alpha1",
-			Kind:    "DynamoComponentDeployment",
-		}: groveGrouper,
 	}
 
 	skipTopOwnerGrouper := skiptopowner.NewSkipTopOwnerGrouper(kubeClient, defaultGrouper, table)
@@ -318,6 +308,12 @@ func NewDefaultPluginsHub(kubeClient client.Client, searchForLegacyPodGroups,
 			Kind:    kind,
 		}] = skipTopOwnerGrouper
 	}
+
+	table[metav1.GroupVersionKind{
+		Group:   "nvidia.com",
+		Version: "v1alpha1",
+		Kind:    "DynamoGraphDeployment",
+	}] = skipTopOwnerGrouper
 
 	return &DefaultPluginsHub{
 		defaultPlugin: defaultGrouper,
