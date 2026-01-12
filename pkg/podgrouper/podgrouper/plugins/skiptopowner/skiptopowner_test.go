@@ -5,18 +5,17 @@ package skiptopowner
 
 import (
 	"context"
-	"maps"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
-	"github.com/NVIDIA/KAI-scheduler/pkg/podgrouper/podgrouper/plugins/constants"
 	"github.com/NVIDIA/KAI-scheduler/pkg/podgrouper/podgrouper/plugins/defaultgrouper"
 	grouperplugin "github.com/NVIDIA/KAI-scheduler/pkg/podgrouper/podgrouper/plugins/grouper"
 )
@@ -53,13 +52,13 @@ var _ = Describe("SkipTopOwnerGrouper", func() {
 			plugin         *skipTopOwnerGrouper
 			client         client.Client
 			defaultGrouper *defaultgrouper.DefaultGrouper
-			supportedTypes map[metav1.GroupVersionKind]grouper.Grouper
+			supportedTypes map[metav1.GroupVersionKind]grouperplugin.Grouper
 		)
 
 		BeforeEach(func() {
 			client = fake.NewFakeClient()
 			defaultGrouper = defaultgrouper.NewDefaultGrouper(queueLabelKey, nodePoolLabelKey, client)
-			supportedTypes = map[metav1.GroupVersionKind]grouper.Grouper{
+			supportedTypes = map[metav1.GroupVersionKind]grouperplugin.Grouper{
 				{Group: "", Version: "v1", Kind: "Pod"}: defaultGrouper,
 			}
 			plugin = NewSkipTopOwnerGrouper(client, defaultGrouper, supportedTypes)
@@ -121,64 +120,24 @@ var _ = Describe("SkipTopOwnerGrouper", func() {
 						Namespace: "test",
 						Labels:    map[string]string{},
 					},
-				},
-				{
+				}
+				replicaSet = &appsv1.ReplicaSet{
+					TypeMeta: metav1.TypeMeta{APIVersion: "apps/v1", Kind: "ReplicaSet"},
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "last-owner",
+						Name:      "test-replicaset",
 						Namespace: "test",
-						Labels:    map[string]string{},
-					},
-				},
-			},
-			expectedResult: "medium-priority",
-			description:    "priorityClassName should propagate through all owners in the chain",
-		},
-		{
-			name: "do not override existing label",
-			skippedOwner: &unstructured.Unstructured{
-				Object: map[string]interface{}{
-					"metadata": map[string]interface{}{
-						"name":      "top-owner",
-						"namespace": "test",
-						"labels": map[string]interface{}{
-							constants.PriorityLabelKey: "high-priority",
+						Labels: map[string]string{
+							queueLabelKey: queueName,
 						},
-					},
-				},
-			},
-			lastOwner: &unstructured.Unstructured{
-				Object: map[string]interface{}{
-					"metadata": map[string]interface{}{
-						"name":      "middle-owner",
-						"namespace": "test",
-						"labels": map[string]interface{}{
-							constants.PriorityLabelKey: "low-priority",
+						OwnerReferences: []metav1.OwnerReference{
+							{
+								Kind:       "Deployment",
+								APIVersion: "apps/v1",
+								Name:       "middle-owner",
+							},
 						},
-					},
-				},
-			},
-			pod: &v1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-pod",
-					Namespace: "test",
-					Labels:    map[string]string{},
-				},
-			},
-			otherOwners:    []*metav1.PartialObjectMetadata{},
-			expectedResult: "low-priority",
-			description:    "existing priorityClassName on child should not be overridden",
-		},
-		{
-			name: "no priorityClassName in chain",
-			skippedOwner: &unstructured.Unstructured{
-				Object: map[string]interface{}{
-					"metadata": map[string]interface{}{
-						"name":      "top-owner",
-						"namespace": "test",
-						"labels":    map[string]interface{}{},
 					},
 				}
-
 				pod = examplePod.DeepCopy()
 				pod.OwnerReferences = []metav1.OwnerReference{
 					{
