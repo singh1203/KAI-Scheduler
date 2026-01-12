@@ -18,10 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 )
-
-var logger = log.FromContext(context.Background()).WithName("podgrouper").WithName("grove")
 
 const (
 	labelKeyPodGangName = "grove.io/podgang"
@@ -126,7 +123,6 @@ func (gg *GroveGrouper) GetPodGroupMetadata(
 
 	metadata.SubGroups = append(parentSubGroups, childSubGroups...)
 	metadata.MinAvailable = minAvailable
-	logger.V(1).Info("GroveGrouper metadata", "metadata", metadata)
 	return metadata, nil
 }
 
