@@ -17,6 +17,7 @@ import (
 
 	jobsetv1alpha2 "sigs.k8s.io/jobset/api/jobset/v1alpha2"
 
+	kaiv1 "github.com/NVIDIA/KAI-scheduler/pkg/apis/kai/v1"
 	v2 "github.com/NVIDIA/KAI-scheduler/pkg/apis/scheduling/v2"
 	"github.com/NVIDIA/KAI-scheduler/pkg/apis/scheduling/v2alpha2"
 	"github.com/NVIDIA/KAI-scheduler/pkg/common/constants"
@@ -29,11 +30,9 @@ import (
 	"github.com/NVIDIA/KAI-scheduler/test/e2e/modules/resources/rd/queue"
 	"github.com/NVIDIA/KAI-scheduler/test/e2e/modules/utils"
 	"github.com/NVIDIA/KAI-scheduler/test/e2e/modules/wait"
-	kaiv1 "github.com/NVIDIA/KAI-scheduler/pkg/apis/kai/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
-
 
 var _ = Describe("JobSet integration", Ordered, func() {
 	var (
@@ -64,12 +63,12 @@ var _ = Describe("JobSet integration", Ordered, func() {
 			err := testCtx.ControllerClient.Get(ctx, client.ObjectKey{Name: "default"}, originalShard)
 			Expect(err).To(Succeed())
 			originalValue := originalShard.Spec.Args["default-staleness-grace-period"]
-			
+
 			// Set to 1s
 			err = configurations.SetShardArg(ctx, testCtx, "default", "default-staleness-grace-period", ptr.To("1s"))
 			Expect(err).To(Succeed())
 			wait.WaitForDeploymentPodsRunning(ctx, testCtx.ControllerClient, constant.SchedulerDeploymentName, constants.DefaultKAINamespace)
-			
+
 			// Restore original value in defer
 			defer func() {
 				var restoreValue *string
@@ -277,8 +276,6 @@ var _ = Describe("JobSet integration", Ordered, func() {
 	})
 })
 
-
-
 func waitForJobSetPods(ctx context.Context, testCtx *testcontext.TestContext, jobSetName, namespace string, expectedCount int) []*v1.Pod {
 	var pods []*v1.Pod
 	Eventually(func() error {
@@ -305,7 +302,6 @@ func waitForJobSetPods(ctx context.Context, testCtx *testcontext.TestContext, jo
 	return pods
 }
 
-
 // findPodGroupByName finds a PodGroup by replicatedJob name suffix.
 func findPodGroupByName(podGroups []v2alpha2.PodGroup, replicatedJobName string) *v2alpha2.PodGroup {
 	for i := range podGroups {
@@ -329,4 +325,3 @@ func findPodGroupByName(podGroups []v2alpha2.PodGroup, replicatedJobName string)
 	}
 	return nil
 }
-
