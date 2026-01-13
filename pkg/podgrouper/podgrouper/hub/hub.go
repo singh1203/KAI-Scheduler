@@ -286,16 +286,6 @@ func NewDefaultPluginsHub(kubeClient client.Client, searchForLegacyPodGroups,
 			Version: "v1alpha1",
 			Kind:    "PodCliqueSet",
 		}: groveGrouper,
-		{
-			Group:   "nvidia.com",
-			Version: "v1alpha1",
-			Kind:    "DynamoGraphDeployment",
-		}: groveGrouper,
-		{
-			Group:   "nvidia.com",
-			Version: "v1alpha1",
-			Kind:    "DynamoComponentDeployment",
-		}: groveGrouper,
 	}
 
 	skipTopOwnerGrouper := skiptopowner.NewSkipTopOwnerGrouper(kubeClient, defaultGrouper, table)
@@ -318,6 +308,13 @@ func NewDefaultPluginsHub(kubeClient client.Client, searchForLegacyPodGroups,
 			Kind:    kind,
 		}] = skipTopOwnerGrouper
 	}
+
+	// Dynamo uses Grove Grouper and needs to propagate metadata from DynamoGraphDeployment to PodGang and PodClique.
+	table[metav1.GroupVersionKind{
+		Group:   "nvidia.com",
+		Version: "v1alpha1",
+		Kind:    "DynamoGraphDeployment",
+	}] = skipTopOwnerGrouper
 
 	return &DefaultPluginsHub{
 		defaultPlugin: defaultGrouper,
