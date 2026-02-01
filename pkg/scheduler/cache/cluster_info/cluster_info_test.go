@@ -473,7 +473,7 @@ func TestSnapshotNodes(t *testing.T) {
 			if err != nil {
 				assert.FailNow(t, fmt.Sprintf("SnapshotNode got error in test %s", t.Name()), err)
 			}
-			pods, err := clusterInfo.addTasksToNodes(allPods, existingPods, nodes, nil)
+			pods, err := clusterInfo.addTasksToNodes(allPods, existingPods, nodes, nil, nil)
 
 			assert.Equal(t, len(test.resultNodes), len(nodes))
 			assert.Equal(t, test.resultPodsLen, len(pods))

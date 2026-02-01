@@ -701,7 +701,7 @@ func (ni *NodeInfo) GetMigStrategy() MigStrategy {
 func (ni *NodeInfo) GetRequiredInitQuota(pi *pod_info.PodInfo) *podgroup_info.JobRequirement {
 	quota := podgroup_info.JobRequirement{}
 	if len(pi.ResReq.MigResources()) != 0 {
-		quota.GPU = pi.ResReq.GetSumGPUs()
+		quota.GPU = pi.ResReq.GetGpusQuota()
 	} else {
 		quota.GPU = ni.getGpuMemoryFractionalOnNode(ni.GetResourceGpuMemory(pi.ResReq))
 	}
@@ -728,7 +728,11 @@ func (ni *NodeInfo) setAcceptedResources(pi *pod_info.PodInfo) {
 		pi.ResourceReceivedType = pod_info.ReceivedTypeRegular
 		pi.AcceptedResource.GpuResourceRequirement = *resource_info.NewGpuResourceRequirementWithGpus(
 			pi.ResReq.GPUs(), 0)
+
+		// TODO: improve by getting claims actual status. This approach doesn't support FirstAvailable requests.
+		pi.AcceptedResource.SetDraGpus(pi.ResReq.DraGpuCounts())
 	}
+
 }
 
 func (ni *NodeInfo) lessEqualTaskToNodeResources(
