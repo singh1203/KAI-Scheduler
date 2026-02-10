@@ -232,7 +232,7 @@ func parseGroveSubGroup(
 	if !found {
 		return nil, fmt.Errorf("missing required 'podReferences' field")
 	}
-	var pods []*types.NamespacedName
+	var pods []string
 	for podIndex, podRef := range podReferences {
 		reference, ok := podRef.(map[string]interface{})
 		if !ok {
@@ -249,7 +249,7 @@ func parseGroveSubGroup(
 			return nil, fmt.Errorf("cross-namespace pod reference not allowed: pod %s/%s cannot be referenced from PodGang in namespace %s",
 				namespacedName.Namespace, namespacedName.Name, namespace)
 		}
-		pods = append(pods, namespacedName)
+		pods = append(pods, namespacedName.Name)
 	}
 	topologyConstraint, err := parseTopologyConstraint(pg, topology, "topologyConstraint", "packConstraint")
 	if err != nil {
