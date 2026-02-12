@@ -19,6 +19,7 @@ import (
 	"github.com/NVIDIA/KAI-scheduler/test/e2e/modules/constant"
 	"github.com/NVIDIA/KAI-scheduler/test/e2e/modules/resources/rd"
 	"github.com/NVIDIA/KAI-scheduler/test/e2e/modules/resources/rd/queue"
+	"github.com/NVIDIA/KAI-scheduler/test/e2e/modules/testconfig"
 	"github.com/NVIDIA/KAI-scheduler/test/e2e/modules/wait/watcher"
 )
 
@@ -159,7 +160,7 @@ func ForNoE2EPods(ctx context.Context, client runtimeClient.WithWatch) {
 }
 
 func ForNoReservationPods(ctx context.Context, client runtimeClient.WithWatch) {
-	ForPodsToBeDeleted(ctx, client, runtimeClient.InNamespace(constant.KaiReservationNamespace))
+	ForPodsToBeDeleted(ctx, client, runtimeClient.InNamespace(testconfig.GetConfig().ReservationNamespace))
 }
 
 func ForPodCountInNamespace(ctx context.Context, client runtimeClient.WithWatch, q *v2.Queue, expectedPodCount int, waitTime time.Duration) {
